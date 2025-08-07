@@ -10,7 +10,6 @@ from app.apis import (
 
 app = FastAPI()
 
-# Registrera varje router
 app.include_router(urlencode.router)
 app.include_router(urldecode.router)
 app.include_router(random_number.router)

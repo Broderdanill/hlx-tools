@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from bs4 import BeautifulSoup

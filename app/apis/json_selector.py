@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 import jsonpath_ng
@@ -6,7 +7,7 @@ router = APIRouter()
 
 class SelectorInput(BaseModel):
     json_data: dict
-    selector: str  # Ex: $.user.name
+    selector: str
 
 @router.post("/json-selector")
 def select_json_path(data: SelectorInput):
