@@ -46,3 +46,24 @@ strip_html
 curl -X POST http://localhost:8000/strip-html \
   -H "Content-Type: application/json" \
   -d '{"html": "<html><body><h1>Rubrik</h1><p>Text med <b>fetstil</b>.</p></body></html>"}'
+
+
+
+html_to_pdf
+-------------------------
+curl -X POST http://localhost:8000/html_to_pdf \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<h1>Hello</h1><p>Detta blir PDF.</p>", "file_name":"hello.pdf"}'
+
+
+base64_to_attachment
+-------------------------
+curl -X POST http://localhost:8000/base64_to_Attachment \
+  -H "Content-Type: application/json" \
+  -d '{"base64":"<din-base64-här>", "file_name":"bilaga.pdf", "content_type":"application/pdf"}'
+
+regex
+-------------------------
+curl -X POST http://localhost:8000/regex \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Order: #1234 och #5678", "regex":"#(\\d+)", "flags":"g"}'
