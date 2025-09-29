@@ -6,7 +6,6 @@ from app.apis import (
     json_selector,
     file_to_base64,
     strip_html,
-    html_to_pdf,
     base64_to_attachment,
     regex
 )
@@ -19,6 +18,5 @@ app.include_router(random_number.router)
 app.include_router(json_selector.router)
 app.include_router(file_to_base64.router)
 app.include_router(strip_html.router)
-app.include_router(html_to_pdf.router)
 app.include_router(base64_to_attachment.router)
 app.include_router(regex.router)
