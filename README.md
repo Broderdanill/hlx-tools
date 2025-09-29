@@ -50,9 +50,12 @@ curl -X POST http://localhost:8000/strip-html \
 
 base64_to_attachment
 -------------------------
-curl -X POST http://localhost:8000/base64_to_Attachment \
+# Text-exempel (du kan byta namn/typ fritt)
+curl -X POST http://localhost:8000/base64_to_attachment \
   -H "Content-Type: application/json" \
-  -d '{"base64":"<din-base64-här>", "file_name":"bilaga.pdf", "content_type":"application/pdf"}'
+  -o out.txt \
+  -d '{"base64":"SGVsbG8sIHdvcmxkIQ==","file_name":"hello.txt"}'
+# out.txt skrivs till disk lokalt (i AR-filter: mappa body till Attachment)
 
 regex
 -------------------------

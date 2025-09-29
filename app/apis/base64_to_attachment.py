@@ -1,47 +1,51 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel, Field
+import base64
+import mimetypes
 import re
 
 router = APIRouter()
 
 class Base64ToAttachmentRequest(BaseModel):
-    base64: str = Field(..., description="Base64-kodad fil. 'data:*;base64,'-prefix tillåts men krävs ej.")
-    file_name: str = Field(..., description="Ex. 'file.pdf'")
-    content_type: str = Field(..., description="Ex. 'application/pdf'")
-
-class ARAttachment(BaseModel):
-    name: str
-    contentType: str
-    data: str  # base64 utan data-URL-prefix
-    size: int  # bytes (dekoderat)
+    base64: str = Field(..., description="Base64-kodad fil. 'data:*;base64,'-prefix tillåts.")
+    file_name: str = Field(..., description="Filnamn som ska användas i Content-Disposition.")
+    content_type: str | None = Field(
+        default=None,
+        description="MIME-typ. Om None försöker vi gissa från filnamnet."
+    )
 
 def _normalize_base64(s: str) -> str:
     s = s.strip()
-    # Ta bort ev. data-URL prefix
     if "base64," in s:
         s = s.split("base64,", 1)[1].strip()
     return s
 
-def _byte_length_of_base64(b64: str) -> int:
-    padding = 2 if b64.endswith("==") else (1 if b64.endswith("=") else 0)
-    return (len(b64) * 3) // 4 - padding
-
-@router.post("/base64_to_Attachment", response_model=ARAttachment)
-def base64_to_attachment_endpoint(data: Base64ToAttachmentRequest):
+@router.post("/base64_to_attachment")
+def base64_to_attachment(data: Base64ToAttachmentRequest):
+    """
+    Tar emot base64 + filnamn och returnerar BINÄR fil
+    med korrekta headers för AR System (Developer Studio filter).
+    """
     clean = _normalize_base64(data.base64)
-
     if not clean:
         raise HTTPException(status_code=400, detail="'base64' får inte vara tom.")
 
-    # Enkel validering (tillåter whitespace)
+    # tillåt whitespace men inga andra tecken
     if not re.fullmatch(r"[A-Za-z0-9+/=\s]+", clean):
         raise HTTPException(status_code=400, detail="Ogiltig base64-sträng.")
 
-    size = _byte_length_of_base64(clean)
+    try:
+        binary = base64.b64decode(clean, validate=True)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Kunde inte dekoda base64: {e}")
 
-    return ARAttachment(
-        name=data.file_name,
-        contentType=data.content_type,
-        data=clean,
-        size=size,
-    )
+    # MIME-type: använd given, annars gissa från filnamn, annars octet-stream
+    ct = data.content_type
+    if not ct:
+        guessed, _ = mimetypes.guess_type(data.file_name)
+        ct = guessed or "application/octet-stream"
+
+    headers = {
+        "Content-Disposition": f'attachment; filename="{data.file_name}"'
+    }
+    return Response(content=binary, media_type=ct, headers=headers)
