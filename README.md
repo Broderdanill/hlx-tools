@@ -56,6 +56,33 @@ curl -X POST http://localhost:8000/base64_to_Attachment \
 
 regex
 -------------------------
+1. Validera och extrahera endast det som matchar:
 curl -X POST http://localhost:8000/regex \
   -H "Content-Type: application/json" \
-  -d '{"text":"Order: #1234 och #5678", "regex":"#(\\d+)", "flags":"g"}'
+  -d '{
+    "text": "abc-123 def",
+    "regex": "[a-z]+-\\d+",
+    "flags": "",
+    "conform": true,
+    "require_full_match": false
+  }'
+
+2. Kräver hel-match – returnera tom om ogiltig:
+curl -X POST http://localhost:8000/regex \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "abc-123",
+    "regex": "^[a-z]+-\\d+$",
+    "conform": true,
+    "require_full_match": true
+  }'
+
+3. Normalisera med template:
+curl -X POST http://localhost:8000/regex \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Order #1234-56",
+    "regex": "Order\\s+#(\\d+)-(\\d+)",
+    "conform": true,
+    "template": "ORDER-\\1/\\2"
+  }'
